@@ -9,3 +9,6 @@ spacemacs/**
 **/*.cache
 **/._*
 **/*.DS_Store
+prelude/**
+prelude
+**/*.log
