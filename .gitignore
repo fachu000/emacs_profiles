@@ -1,0 +1,11 @@
+._default
+._empty
+spacemacs
+spacemacs/**
+**/elpa/**
+**/auto-save-list/**
+**/*~
+**/semanticdb
+**/*.cache
+**/._*
+**/*.DS_Store
