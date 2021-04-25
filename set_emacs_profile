@@ -1,0 +1,68 @@
+#!/bin/bash
+
+dot_folders="/home/pi/bin/dot_emacs_folders/"
+
+# Check that a profile is provided
+profile=$1
+if [ "$profile" = "" ];
+then
+    echo "Usage: "$0" <profile>"
+    echo "where <profile> can be"
+    ls $dot_folders
+    exit 1
+fi
+
+# Check that the profile exists
+profile_folder=$dot_folders$profile
+if [ ! -d "$profile_folder" ]
+then
+    echo "profile does not exist"
+    echo "valid profiles:"
+    ls $dot_folders
+    exit 1
+fi
+
+# Check that there is no active Emacs process
+existing_processes=$(ps axwu | grep Emacs | grep -v "grep")
+if [ ! "$existing_processes" = "" ];
+then
+   echo "An emacs session is open. Close it before proceeding."
+   exit 1
+fi
+
+# Getting rid of existing .emacs.d
+old_dot_emacs_folder=$HOME"/.emacs.d"
+if [ -L "$old_dot_emacs_folder" ]
+then
+    echo "Existing $old_dot_emacs_folder is a symlink. Deleting it."
+    rm $old_dot_emacs_folder
+fi
+#
+if [ -d "$old_dot_emacs_folder" ]
+then
+    echo "An old .emacs.d folder exists."
+
+    # Ensure old folder exists
+    old_folder="$HOME""/old/"
+    if [ ! -d "$old_folder" ]
+    then
+	echo "$old_folder does not exist. Creating it."
+	mkdir $old_folder
+    fi
+
+    new_name="$old_folder"$(date)"dot_emacs_d"
+    echo "Moving existing .emacs.d folder to $old_folder as $new_name"
+    mv -v $old_dot_emacs_folder "$new_name"
+fi
+
+# Doing the real job
+
+conf_folder=$dot_folders$profile
+if [ $profile = "empty" ]
+then
+    cp -R $conf_folder ~/.emacs.d
+else
+    ln -s $conf_folder ~/.emacs.d
+fi
+
+echo "Switched to profile $profile"
