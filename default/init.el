@@ -21,13 +21,14 @@
  '(elpy-rpc-python-command
    "/Users/dani/Dropbox/signal_processing_stuff/code/python/environments/generic_mac/bin/python")
  '(elpy-rpc-timeout 6)
+ '(elpy-rpc-virtualenv-path (quote current))
  '(exec-path
    (quote
     ("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/Applications/Emacs.app/Contents/MacOS/bin-x86_64-10_14" "/Applications/Emacs.app/Contents/MacOS/libexec-x86_64-10_14" "/Applications/Emacs.app/Contents/MacOS/libexec" "/Applications/Emacs.app/Contents/MacOS/bin" "/Library/Tex/texbin")))
  '(inhibit-startup-screen t)
  '(package-selected-packages
    (quote
-    (company-c-headers lsp-mode use-package sublimity-scroll sublimity ggtags smartparens helm direx idle-highlight-mode flyspell-correct flycheck elpy)))
+    (jedi company-c-headers lsp-mode use-package sublimity-scroll sublimity ggtags smartparens helm direx idle-highlight-mode flyspell-correct flycheck elpy)))
  '(pyvenv-activate
    "/Users/dani/Dropbox/signal_processing_stuff/code/python/environments/generic_mac"))
 
@@ -46,21 +47,21 @@
 
 
 
- (defun compileltx ( )
-(interactive)
-(progn
- (save-buffer)
- (setq name (buffer-name))
-(setq outvalue (call-process "pdflatex" nil "pdflatex"  nil name) )
-(if (> outvalue 0) (switch-to-buffer "pdflatex")
+(defun compileltx ( )
+  (interactive)
   (progn
-    (setq posdot (string-match "\\." name ))
-    (setq pdfname (concat (substring name 0  posdot) ".pdf" ) )
-; (call-process "evincescript.sh" nil  nil nil pdfname)
-    (start-process "my-process" "foo" "atril" pdfname))
-)
-)
-)
+    (save-buffer)
+    (setq name (buffer-name))
+    (setq outvalue (call-process "pdflatex" nil "pdflatex"  nil name) )
+    (if (> outvalue 0) (switch-to-buffer "pdflatex")
+      (progn
+        (setq posdot (string-match "\\." name ))
+        (setq pdfname (concat (substring name 0  posdot) ".pdf" ) )
+                                        ; (call-process "evincescript.sh" nil  nil nil pdfname)
+        (start-process "my-process" "foo" "atril" pdfname))
+      )
+    )
+  )
 
 ;; (defun compileltx ( )
 ;; (interactive)
@@ -82,33 +83,33 @@
 ;; )
 
 
-; A) BIBTEX + PDFLATEX:
- (defun compileltx ( )
-(interactive)
-(progn
- (save-buffer)
- (setq name (buffer-name))
-
+                                        ; A) BIBTEX + PDFLATEX:
+(defun compileltx ( )
+  (interactive)
   (progn
-    (setq posdot (string-match "\\." name ))
-    (setq pdfname (concat (substring name 0  posdot) ".pdf" ) )
+    (save-buffer)
+    (setq name (buffer-name))
 
- (setq posdot (string-match "\\." name ))
- (setq auxname (concat (substring name 0  posdot) ".aux" ) )
+    (progn
+      (setq posdot (string-match "\\." name ))
+      (setq pdfname (concat (substring name 0  posdot) ".pdf" ) )
 
-(call-process "bibtex" nil "bibtex"  nil auxname)
+      (setq posdot (string-match "\\." name ))
+      (setq auxname (concat (substring name 0  posdot) ".aux" ) )
 
-(setq outvalue (call-process "pdflatex" nil "pdflatex"  nil name) )
-(if (> outvalue 0) (switch-to-buffer "pdflatex")
-  (progn
-    (setq posdot (string-match "\\." name ))
-    (setq pdfname (concat (substring name 0  posdot) ".pdf" ) )
-; (call-process "evincescript.sh" nil  nil nil pdfname)
-    (start-process "my-process" "foo" "atril" pdfname))
-)
-)
-)
-)
+      (call-process "bibtex" nil "bibtex"  nil auxname)
+
+      (setq outvalue (call-process "pdflatex" nil "pdflatex"  nil name) )
+      (if (> outvalue 0) (switch-to-buffer "pdflatex")
+        (progn
+          (setq posdot (string-match "\\." name ))
+          (setq pdfname (concat (substring name 0  posdot) ".pdf" ) )
+                                        ; (call-process "evincescript.sh" nil  nil nil pdfname)
+          (start-process "my-process" "foo" "atril" pdfname))
+        )
+      )
+    )
+  )
 
 
 
@@ -116,78 +117,75 @@
 (defun compileltx ( )
   (interactive)
 
-(progn
-  (save-buffer)
+  (progn
+    (save-buffer)
 
-  (progn ; setting the name of the parent file. It depends on whether there is a line
-	; containing the text "% parent file: name_of_the_parent_file.tex" or not
-    (setq initial_pos (point))
-    (goto-line 0)
-    (if (setq start_point (search-forward "% parent file: " nil t))
+    (progn ; setting the name of the parent file. It depends on whether there is a line
+                                        ; containing the text "% parent file: name_of_the_parent_file.tex" or not
+      (setq initial_pos (point))
+      (goto-line 0)
+      (if (setq start_point (search-forward "% parent file: " nil t))
 					; if there is a line with the text "% parent file: "
-	(progn (setq end_point (search-forward ".tex" nil t))
-	       (setq parent_file_name (buffer-substring-no-properties start_point end_point))
-	       )
+          (progn (setq end_point (search-forward ".tex" nil t))
+                 (setq parent_file_name (buffer-substring-no-properties start_point end_point))
+                 )
 					; else
-      (setq parent_file_name (buffer-name))
+        (setq parent_file_name (buffer-name))
+        )
+      (goto-char initial_pos)
       )
-    (goto-char initial_pos)
-
-    )
 
 
-  (progn  ; we change to the folder where the parent folder is
-;    (setq parent_file_name "../file.tex")
-    (setq pos 0)
-    (setq pos_new 0)
-    (while
-	(setq pos_new (string-match "/" parent_file_name (+ pos 1)) )
-      (progn
-;	(print pos)
-;	(print pos_new)
-;	(print "uuuu")
-	(setq pos pos_new)
-	)
-      ) ; after this while, pos contains the position of the last match
+    (progn  ; we change to the folder where the parent file is
+                                        ;    (setq parent_file_name "../file.tex")
+      (setq pos 0)
+      (setq pos_new 0)
+      (while
+          (setq pos_new (string-match "/" parent_file_name (+ pos 1)) )
+        (progn
+                                        ;	(print pos)
+                                        ;	(print pos_new)
+                                        ;	(print "uuuu")
+          (setq pos pos_new)
+          )
+        ) ; after this while, pos contains the position of the last match
 
-    (if (> pos 0)
-	(progn
-	  (setq relative_path  (substring parent_file_name 0  (+ 1 pos)))
-	  (setq default-directory
-		(format "%s%s" (file-name-directory (or load-file-name buffer-file-name)) relative_path )
-		)
-	  (setq parent_file_name (substring parent_file_name (+ 1 pos) nil  ))
-	  )
+      (if (> pos 0)
+          (progn
+            (setq relative_path  (substring parent_file_name 0  (+ 1 pos)))
+            (setq default-directory
+                  (format "%s%s" (file-name-directory (or load-file-name buffer-file-name)) relative_path )
+                  )
+            (setq parent_file_name (substring parent_file_name (+ 1 pos) nil  ))
+            )
 					; else
-      (progn (setq default-directory (file-name-directory (or load-file-name buffer-file-name)))
-;	     (print default-directory)
-	     )
+        (progn (setq default-directory (file-name-directory (or load-file-name buffer-file-name)))
+                                        ;	     (print default-directory)
+               )
+        )
+                                        ;    (print default-directory)
+                                        ;    (print parent_file_name)
       )
-;    (print default-directory)
-;    (print parent_file_name)
-    )
 
+    (progn   ; latex to pdf
+      (setq posdot (string-match "\\." parent_file_name ))
+      (setq pdfname (concat (substring parent_file_name 0  posdot) ".pdf" ) )
 
+      (setq auxname (concat (substring parent_file_name 0  posdot) ".aux" ) )
 
-  (progn   ; latex to pdf
-    (setq posdot (string-match "\\." parent_file_name ))
-    (setq pdfname (concat (substring parent_file_name 0  posdot) ".pdf" ) )
+      (call-process "/Library/TeX/texbin/bibtex" nil "bibtex"  nil auxname)
 
-    (setq auxname (concat (substring parent_file_name 0  posdot) ".aux" ) )
-
-    (call-process "/Library/TeX/texbin/bibtex" nil "bibtex"  nil auxname)
-
-    (setq outvalue (call-process "pdflatex" nil "pdflatex"  nil parent_file_name) )
-    (if (> outvalue 0) (switch-to-buffer "pdflatex")
-      (progn
+      (setq outvalue (call-process "pdflatex" nil "pdflatex"  nil parent_file_name) )
+      (if (> outvalue 0) (switch-to-buffer "pdflatex")
+        (progn
 					;	  (setq posdot (string-match "\\." name ))
-	(setq pdfname (concat (substring parent_file_name 0  posdot) ".pdf" ) )
+          (setq pdfname (concat (substring parent_file_name 0  posdot) ".pdf" ) )
 					; (call-process "evincescript.sh" nil  nil nil pdfname)
-	(start-process "my-process" "foo" "open" pdfname))
+          (start-process "my-process" "foo" "open" pdfname))
+        )
       )
     )
   )
-)
 
 
 (global-set-key (kbd "<f5>") 'compileltx)
@@ -241,7 +239,6 @@ use backslash!!"
 
 
 (package-initialize)
-(elpy-enable)
 
 
 
@@ -766,3 +763,10 @@ indent yanked text (with prefix arg don't indent)."
 
 (global-set-key (kbd "C-c , d") #'semantic-display-tag)
 (easy-menu-add-item cedet-menu-map '("Navigate Tags") ["Display Tag" semantic-display-tag (semantic-active-p)] 'semantic-complete-jump-local)
+
+;; Jedi
+(add-hook 'python-mode-hook 'jedi:setup)
+(setq jedi:complete-on-dot t)                 ; optional
+
+;;;
+(elpy-enable)

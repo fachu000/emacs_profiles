@@ -12,3 +12,5 @@ spacemacs/**
 prelude/**
 prelude
 **/*.log
+
+**/*.dat
