@@ -84,7 +84,7 @@
 
 
                                         ; A) BIBTEX + PDFLATEX:
-(defun compileltx ( )
+(defun compileltx ( ) 
   (interactive)
   (progn
     (save-buffer)
@@ -112,6 +112,36 @@
   )
 
 
+; Problem hub compilation
+(defun ph-compile ( )
+  (print "inside ph-compile")
+
+  (setq ph-buffer-name "ph-latex")
+  (if (member ph-buffer-name (mapcar 'buffer-name (buffer-list)) ) 
+      (kill-buffer ph-buffer-name)
+    )
+
+  
+  (setq outvalue (call-process "/Users/dani/Dropbox/signal_processing_stuff/code/python/environments/generic_mac/bin/python" nil ph-buffer-name  nil "/Users/dani/Dropbox/signal_processing_stuff/websites/django/psite/problemhub/latex.py" buffer-file-name))
+
+                                        ;  (switch-to-buffer ph-buffer-name)
+  (if (> outvalue 0)
+      (switch-to-buffer ph-buffer-name)
+    (progn
+      (with-current-buffer ph-buffer-name (setq pdf_fi_name (buffer-string))
+                           )
+      (setq pdf_fi_name (substring pdf_fi_name 0 -1))
+                                        ;   (print "hello")
+      (print pdf_fi_name)
+      
+      ;; (setq posdot (string-match "\\." name ))
+      ;; (setq pdfname (concat (substring parent_file_name 0  posdot) ".pdf" ) )
+      ;; (call-process "evincescript.sh" nil  nil nil pdfname)
+      ;;(start-process "my-process" "foo" "open" pdf_fi_name))
+      (call-process "/usr/bin/open" nil "openbf" nil pdf_fi_name)
+      )
+    )
+  )
 
 ;  This is the version that takes the (optional) name of the parent file from the current buffer
 (defun compileltx ( )
@@ -123,18 +153,34 @@
     (progn ; setting the name of the parent file. It depends on whether there is a line
                                         ; containing the text "% parent file: name_of_the_parent_file.tex" or not
       (setq initial_pos (point))
+
       (goto-line 0)
-      (if (setq start_point (search-forward "% parent file: " nil t))
+      (if (setq start_point (search-forward "%% ph_def_problem" nil t))
+          (ph-compile)
+        (progn
+          (goto-line 0)
+          (if (setq start_point (search-forward "% parent file: " nil t))
 					; if there is a line with the text "% parent file: "
-          (progn (setq end_point (search-forward ".tex" nil t))
-                 (setq parent_file_name (buffer-substring-no-properties start_point end_point))
-                 )
+              (progn (setq end_point (search-forward ".tex" nil t))
+                     (setq parent_file_name (buffer-substring-no-properties start_point end_point))
+                     (compileltx-file parent_file_name)
+                     )
 					; else
-        (setq parent_file_name (buffer-name))
-        )
+            (progn (setq parent_file_name (buffer-name))
+                   (compileltx-file parent_file_name)
+                   )
+            )
+          )
+
+        )      
       (goto-char initial_pos)
       )
+    )
+  )
 
+
+(defun compileltx-file (parent_file_name)
+  (interactive)
 
     (progn  ; we change to the folder where the parent file is
                                         ;    (setq parent_file_name "../file.tex")
@@ -150,7 +196,8 @@
           )
         ) ; after this while, pos contains the position of the last match
 
-      (if (> pos 0)
+      (if
+          (> pos 0)
           (progn
             (setq relative_path  (substring parent_file_name 0  (+ 1 pos)))
             (setq default-directory
@@ -185,7 +232,7 @@
         )
       )
     )
-  )
+  
 
 
 (global-set-key (kbd "<f5>") 'compileltx)
