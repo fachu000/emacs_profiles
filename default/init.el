@@ -143,41 +143,6 @@
     )
   )
 
-;  This is the version that takes the (optional) name of the parent file from the current buffer
-(defun compileltx ( )
-  (interactive)
-
-  (progn
-    (save-buffer)
-
-    (progn ; setting the name of the parent file. It depends on whether there is a line
-                                        ; containing the text "% parent file: name_of_the_parent_file.tex" or not
-      (setq initial_pos (point))
-
-      (goto-line 0)
-      (if (setq start_point (search-forward "%% ph_def_problem" nil t))
-          (ph-compile)
-        (progn
-          (goto-line 0)
-          (if (setq start_point (search-forward "% parent file: " nil t))
-					; if there is a line with the text "% parent file: "
-              (progn (setq end_point (search-forward ".tex" nil t))
-                     (setq parent_file_name (buffer-substring-no-properties start_point end_point))
-                     (compileltx-file parent_file_name)
-                     )
-					; else
-            (progn (setq parent_file_name (buffer-name))
-                   (compileltx-file parent_file_name)
-                   )
-            )
-          )
-
-        )      
-      (goto-char initial_pos)
-      )
-    )
-  )
-
 
 (defun compileltx-file (parent_file_name)
   (interactive)
@@ -233,6 +198,46 @@
       )
     )
   
+
+;  This is the version that takes the (optional) name of the parent file from the current buffer
+(defun compileltx ( )
+  (interactive)
+
+  (progn
+    (save-buffer)    
+    (progn ; setting the name of the parent file. It depends on whether there is a line
+                                        ; containing the text "% parent file: name_of_the_parent_file.tex" or not
+      (setq initial_pos (point))
+
+      (goto-line 0)
+      (if (setq start_point (search-forward "%% ph_def_problem" nil t))
+          (progn
+            (goto-char initial_pos)
+            (ph-compile)
+            )
+        (progn
+          (goto-line 0)
+          (if (setq start_point (search-forward "% parent file: " nil t))
+					; if there is a line with the text "% parent file: "
+              (progn (setq end_point (search-forward ".tex" nil t))
+                     (setq parent_file_name (buffer-substring-no-properties start_point end_point))
+                     (goto-char initial_pos)
+                     (compileltx-file parent_file_name)
+                     )
+					; else
+            (progn (setq parent_file_name (buffer-name))
+                   (goto-char initial_pos)
+                   (compileltx-file parent_file_name)
+                   )
+            )
+          )
+
+        )
+      )
+    )
+  )
+
+
 
 
 (global-set-key (kbd "<f5>") 'compileltx)
@@ -817,3 +822,7 @@ indent yanked text (with prefix arg don't indent)."
 
 ;;;
 (elpy-enable)
+
+(global-set-key (kbd "C-c c r") 'comment-region)
+(global-set-key (kbd "C-c u r") 'uncomment-region)
+(global-set-key (kbd "C-c p p") 'pop-tag-mark)
