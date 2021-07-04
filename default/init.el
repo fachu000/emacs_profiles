@@ -826,3 +826,11 @@ indent yanked text (with prefix arg don't indent)."
 (global-set-key (kbd "C-c c r") 'comment-region)
 (global-set-key (kbd "C-c u r") 'uncomment-region)
 (global-set-key (kbd "C-c p p") 'pop-tag-mark)
+
+
+;;;
+(add-hook 'shell-mode-hook 'compilation-shell-minor-mode)
+
+;;;
+;; Use M-<left>, M-<up>, etc to switch to other windows. 
+(windmove-default-keybindings 'meta)
