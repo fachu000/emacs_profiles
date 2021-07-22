@@ -29,6 +29,7 @@
  '(package-selected-packages
    (quote
     (jedi company-c-headers lsp-mode use-package sublimity-scroll sublimity ggtags smartparens helm direx idle-highlight-mode flyspell-correct flycheck elpy)))
+ '(python-shell-interpreter "python")
  '(pyvenv-activate
    "/Users/dani/Dropbox/signal_processing_stuff/code/python/environments/generic_mac"))
 
